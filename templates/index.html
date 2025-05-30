@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="15">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Monitor</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .status { display: flex; justify-content: space-around; margin-bottom: 20px; }
+    .status div { padding: 10px 20px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .up { background: #e6ffed; color: #2d7a36; }
+    .down { background: #ffe6e6; color: #a12d2d; }
+    .toggle-button { text-decoration: none; font-weight: bold; margin-left: 10px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background: #f7f9fb; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .timestamp { font-size: 0.9em; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Service Monitor</h1>
+    <div class="status">
+      <div class="{{ 'up' if dhcp_status=='active' else 'down' }}">
+        DNSMASQ: {{ dhcp_status|capitalize }}
+        <a href="/toggle/dnsmasq" class="toggle-button">{{ 'Stop' if dhcp_status=='active' else 'Start' }}</a>
+      </div>
+      <div class="{{ 'up' if rad_status=='active' else 'down' }}">
+        FreeRADIUS: {{ rad_status|capitalize }}
+        <a href="/toggle/freeradius" class="toggle-button">{{ 'Stop' if rad_status=='active' else 'Start' }}</a>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2>Latest DHCP Leases</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Time</th><th>MAC Address</th><th>IP Address</th><th>Hostname</th></tr>
+      </thead>
+      <tbody>
+      {% for lease in leases %}
+        <tr>
+          <td>{{ lease.time }}</td>
+          <td>{{ lease.mac }}</td>
+          <td>{{ lease.ip }}</td>
+          <td>{{ lease.hostname }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="section-header">
+      <h2>Recent RADIUS Events</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Time</th><th>User</th><th>NAS IP</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+      {% for e in rad_entries %}
+        <tr>
+          <td>{{ e.time }}</td>
+          <td>{{ e.user or '-' }}</td>
+          <td>{{ e.nas or '-' }}</td>
+          <td>{{ e.result|capitalize }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p style="text-align:center; font-size:0.9em; color:#666;">Page refreshes every 15s</p>
+  </div>
+</body>
+</html>
